@@ -2,54 +2,34 @@ package main
 
 import (
     "encoding/json"
+    "log"
     "net/http"
+
+    "nutrition-microservice/gemini"
+    // "nutrition-microservice/edamam"
 )
 
-type IngredientRequest struct {
-    ImagePath string `json:"image_path"`
-}
-
-type NutritionRequest struct {
-    Ingredients []string `json:"ingredients"`
-}
-
-type NutritionResponse struct {
-    NutritionalValues map[string]float64 `json:"nutritional_values"`
-}
-
-func extractIngredients(w http.ResponseWriter, r *http.Request) {
-    var req IngredientRequest
+func extractIngredientsHandler(w http.ResponseWriter, r *http.Request) {
+    var req gemini.IngredientRequest
     err := json.NewDecoder(r.Body).Decode(&req)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
+        http.Error(w, "Invalid request payload", http.StatusBadRequest)
         return
     }
 
-    // Call Google Gemini API here and extract ingredients...
-    ingredients := []string{"1 cup rice", "10 oz chickpeas"} // Mock response
+    ingredients, err := gemini.ExtractIngredients(req.ImageData)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 
     json.NewEncoder(w).Encode(ingredients)
 }
 
-func analyzeNutrition(w http.ResponseWriter, r *http.Request) {
-    var req NutritionRequest
-    err := json.NewDecoder(r.Body).Decode(&req)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
-
-    // Call Edamam API here and analyze nutrition...
-    nutritionResponse := NutritionResponse{
-        NutritionalValues: map[string]float64{"calories": 200, "protein": 10}, // Mock response
-    }
-
-    json.NewEncoder(w).Encode(nutritionResponse)
-}
-
 func main() {
-    http.HandleFunc("/extract_ingredients", extractIngredients)
-    http.HandleFunc("/analyze_nutrition", analyzeNutrition)
+    http.HandleFunc("/extract_ingredients", extractIngredientsHandler)
+    // http.HandleFunc("/analyze_nutrition", analyzeNutritionHandler)
 
-    http.ListenAndServe(":8080", nil)
+    log.Println("Server is running on port 8080...")
+    log.Fatal(http.ListenAndServe(":8080", nil))
 }
