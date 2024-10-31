@@ -31,7 +31,7 @@ A microservice in Go to extract ingredient information from an image using Googl
   - Response: List of extracted ingredients.
 
 - `POST /analyze_nutrition`
-  - Request body: `{ "ingredients": ["1 cup rice", "10 oz chickpeas"] }`
+  - Request body: `{ "ingredients": "1 cup rice, 10 oz chickpeas" }`
   - Response: Nutritional values for the ingredients.
 
 ## Testing
