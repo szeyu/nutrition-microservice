@@ -26,7 +26,24 @@ func extractIngredientsHandler(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(ingredients)
 }
 
-func analyzeNutritionHandler(w http.ResponseWriter, r *http.Request) {
+func geminiAnalyzeNutritionHandler(w http.ResponseWriter, r *http.Request) {
+    var req gemini.NutritionRequest
+    err := json.NewDecoder(r.Body).Decode(&req)
+    if err != nil {
+        http.Error(w, "Invalid request payload", http.StatusBadRequest)
+        return
+    }
+
+    nutrition, err := gemini.AnalyzeNutrition(req.Ingredients)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    json.NewEncoder(w).Encode(nutrition)
+}
+
+func edamamAnalyzeNutritionHandler(w http.ResponseWriter, r *http.Request) {
     var req edamam.NutritionRequest
     err := json.NewDecoder(r.Body).Decode(&req)
     if err != nil {
@@ -45,7 +62,8 @@ func analyzeNutritionHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
     http.HandleFunc("/extract_ingredients", extractIngredientsHandler)
-    http.HandleFunc("/analyze_nutrition", analyzeNutritionHandler)
+    http.HandleFunc("/gemini_analyze_nutrition", geminiAnalyzeNutritionHandler)
+    http.HandleFunc("/edamam_analyze_nutrition", edamamAnalyzeNutritionHandler)
 
     log.Println("Server is running on port 8080...")
     log.Fatal(http.ListenAndServe(":8080", nil))
