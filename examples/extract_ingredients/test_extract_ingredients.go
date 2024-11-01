@@ -5,15 +5,15 @@ import (
     "encoding/base64"
     "encoding/json"
     "fmt"
-    "io/ioutil"
+    "os"
     "net/http"
 )
 
 func main() {
-    imagePath := "C:\\Users\\szeyu\\Downloads\\WhatsApp Image 2024-08-30 at 13.54.18_28b332e2.jpg"
+    imagePath := "examples\\extract_ingredients\\foods.jpg"
     
     // Read image file
-    imageData, err := ioutil.ReadFile(imagePath)
+    imageData, err := os.ReadFile(imagePath)
     if err != nil {
         fmt.Println("Error reading image:", err)
         return
