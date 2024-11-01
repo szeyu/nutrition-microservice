@@ -27,7 +27,7 @@ A microservice in Go to extract ingredient information from an image using Googl
 ## API Endpoints
 
 - `POST /extract_ingredients`
-  - Request body: `{ "image_path": "path/to/image.jpg" }`
+  - Request body: `{ "image_data": "<base64 encoded image>" }`
   - Response: List of extracted ingredients.
 
 - `POST /analyze_nutrition`
@@ -40,10 +40,10 @@ You can test the endpoints using the provided example scripts:
 
 1. To test ingredient extraction:
    ```
-   go run examples/test_extract_ingredients.go
+   go run examples/extract_ingredients/test_extract_ingredients.go
    ```
 
 2. To test nutrition analysis:
    ```
-   go run examples/test_analyze_nutrition.go
+   go run examples/analyze_nutrition/test_analyze_nutrition.go
    ```
