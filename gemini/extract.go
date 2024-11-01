@@ -108,5 +108,6 @@ func ExtractIngredients(imageData string) (string, error) {
         }
     }
 
+    fmt.Println("Ingredients:", ingredients.String())
     return ingredients.String(), nil
 }
