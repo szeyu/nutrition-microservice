@@ -96,7 +96,14 @@ func ExtractIngredients(imageData string) (string, error) {
     model := client.GenerativeModel("gemini-1.5-flash")
     resp, err := model.GenerateContent(ctx,
         genai.FileData{URI: file.URI},
-        genai.Text("Based on the food scanned, extract all the ingredients used based on what you see in this image only. Don't provide any other explanation"))
+        genai.Text(
+            `Based on the food scanned, extract out the quanitty and ingredients used in food image. Don't provide explanation. Please follow the output format
+            Example output:
+            - 4 pieces of Wedges
+
+            Output format:
+            - <quantity> <unit> <Ingredient>`))
+
     if err != nil {
         return "", err
     }
