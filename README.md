@@ -20,7 +20,16 @@ A microservice in Go to extract ingredient information from an image using Googl
    go mod init nutrition-microservice
    ```
 
-3. Run the application:
+3. Create a `.env` file in the root directory and add the following environment variables:
+   ```
+   GEMINI_API_KEY=
+   EDAMAM_NUTRITION_APP_ID=
+   EDAMAM_NUTRITION_APP_KEY=
+   EDAMAM_RECIPE_APP_ID=
+   EDAMAM_RECIPE_APP_KEY=
+   ```
+
+4. Run the application:
    ```
    go run main.go
    ```
