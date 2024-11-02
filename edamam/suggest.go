@@ -2,42 +2,39 @@ package edamam
 
 import (
 	"fmt"
-	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"io"
-
+	"log"
+	"net/url"
 	"github.com/joho/godotenv" // Import godotenv
 )
 
-type NutritionRequest struct {
+type RecipeRequest struct {
 	Ingredients string `json:"ingredients"`
 }
 
-func AnalyzeNutrition(ingredients string) (string, error) {
+func SugggestRecipe(ingredients string) (string, error) {
 	// Load environment variables from .env file
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
-		return "", err
-	}
+    if err := godotenv.Load(); err != nil {
+        log.Fatal("Error loading .env file")
+    }
 
-	var EDAMAM_APP_ID string = os.Getenv("EDAMAM_NUTRITION_APP_ID")
-	var EDAMAM_APP_KEY string = os.Getenv("EDAMAM_NUTRITIONAPP_KEY")
-	fmt.Println("EDAMAM_NUTRITION_APP_ID:", EDAMAM_APP_ID)
-	fmt.Println("EDAMAM_NUTRITION_APP_KEY:", EDAMAM_APP_KEY)
+	var EDAMAM_APP_ID string = os.Getenv("EDAMAM_RECIPE_APP_ID")
+	var EDAMAM_APP_KEY string = os.Getenv("EDAMAM_RECIPE_APP_KEY")
+	fmt.Println("EDAMAM_RECIPE_APP_ID:", EDAMAM_APP_ID)
+	fmt.Println("EDAMAM_RECIPE_APP_KEY:", EDAMAM_APP_KEY)
 	fmt.Println("ingredients:", ingredients)
 
 	// Prepare request URL with query parameters
-	baseURL := "https://api.edamam.com/api/nutrition-data"
+	baseURL := "https://api.edamam.com/api/recipes/v2"
 	params := url.Values{}
 	params.Add("app_id", EDAMAM_APP_ID)
 	params.Add("app_key", EDAMAM_APP_KEY)
-	// params.Add("nutrition-type", "logging")
-	params.Add("ingr", ingredients)
+	params.Add("type", "public")
+	params.Add("q", ingredients)
 
 	requestURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
-	fmt.Println("requestURL:", requestURL)
 
 	// Send GET request to server
 	resp, err := http.Get(requestURL)
@@ -52,6 +49,8 @@ func AnalyzeNutrition(ingredients string) (string, error) {
 		return "", err
 	}
 	fmt.Println("Raw JSON response:", string(rawData))
+
+	fmt.Println("requestURL:", requestURL)
 
 	return string(rawData), nil
 }
