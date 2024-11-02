@@ -22,10 +22,10 @@ func AnalyzeNutrition(ingredients string) (string, error) {
 		return "", err
 	}
 
-	var EDAMAM_APP_ID string = os.Getenv("EDAMAM_APP_ID")
-	var EDAMAM_APP_KEY string = os.Getenv("EDAMAM_APP_KEY")
-	fmt.Println("EDAMAM_APP_ID:", EDAMAM_APP_ID)
-	fmt.Println("EDAMAM_APP_KEY:", EDAMAM_APP_KEY)
+	var EDAMAM_APP_ID string = os.Getenv("EDAMAM_NUTRITION_APP_ID")
+	var EDAMAM_APP_KEY string = os.Getenv("EDAMAM_NUTRITIONAPP_KEY")
+	fmt.Println("EDAMAM_NUTRITION_APP_ID:", EDAMAM_APP_ID)
+	fmt.Println("EDAMAM_NUTRITION_APP_KEY:", EDAMAM_APP_KEY)
 	fmt.Println("ingredients:", ingredients)
 
 	// Prepare request URL with query parameters
