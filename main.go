@@ -4,6 +4,7 @@ import (
     "encoding/json"
     "log"
     "net/http"
+    "os"
 
     "nutrition-microservice/gemini"
     "nutrition-microservice/edamam"
@@ -96,6 +97,10 @@ func main() {
     http.HandleFunc("/edamam_suggest_recipe", edamamSuggestRecipeHandler)
 
     // Start the server
-    log.Println("Server is running on port 8080...")
-    log.Fatal(http.ListenAndServe(":8080", nil))
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8080" // Default to 8080 if PORT is not set
+    }
+    log.Fatal(http.ListenAndServe(":"+port, nil))
+
 }
