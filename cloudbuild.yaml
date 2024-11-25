@@ -1,8 +1,20 @@
 steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/$PROJECT_ID/nutrition-microservice', '.']
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/nutrition-microservice']
+    env:
+      - DOCKER_BUILDKIT=1
+  - name: 'gcr.io/cloud-builders/gsutil'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Debugging Build Environment:"
+        ls -la /workspace
+        echo "Dockerfile:"
+        cat /workspace/Dockerfile
+        echo "go.mod:"
+        cat /workspace/go.mod
+
 
 images:
   - 'gcr.io/$PROJECT_ID/nutrition-microservice'
