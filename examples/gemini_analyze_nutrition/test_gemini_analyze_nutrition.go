@@ -30,7 +30,7 @@ func main() {
 	}
 
 	// Send request to server
-	resp, err := http.Post("http://localhost:8080/gemini_analyze_nutrition", "application/json", bytes.NewBuffer(requestBody))
+	resp, err := http.Post("https://nutrition-microservice-93006231992.us-central1.run.app/gemini_analyze_nutrition", "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		fmt.Println(err)
 		return
