@@ -21,81 +21,104 @@ type IngredientRequest struct {
 
 // ExtractIngredients function that uses the Google Gemini API to extract ingredients from an image
 func ExtractIngredients(imageData string) (string, error) {
-	// Load environment variables from .env file
-    if err := godotenv.Load(); err != nil {
-        log.Fatal("Error loading .env file")
+    if err := loadEnv(); err != nil {
+        return "", err
     }
 
-	var GEMINI_API_KEY string = os.Getenv("GEMINI_API_KEY")
-	fmt.Println("GEMINI_API_KEY:", GEMINI_API_KEY)
+    GEMINI_API_KEY := os.Getenv("GEMINI_API_KEY")
+    fmt.Println("GEMINI_API_KEY:", GEMINI_API_KEY)
 
-	ctx := context.Background()
+    ctx := context.Background()
     client, err := genai.NewClient(ctx, option.WithAPIKey(GEMINI_API_KEY))
     if err != nil {
-        log.Fatal(err)
+        return "", err
     }
     defer client.Close()
 
-    // Decode base64 image data
-    decodedData, err := base64.StdEncoding.DecodeString(imageData)
+    tempFile, err := createTempFile(imageData)
     if err != nil {
         return "", err
     }
+    defer os.Remove(tempFile.Name())
 
-	// Log the size of the decoded data
-	fmt.Println("Decoded data size:", len(decodedData))
-
-    // Write the decoded image data to a temporary file
-    tempFile, err := os.CreateTemp("", "*.jpg")
-    if err != nil {
-        return "", err
-    }
-	
-    defer os.Remove(tempFile.Name()) // Clean up the file afterward
-	
-    // Write data to the temp file and close it
-	if _, err := tempFile.Write(decodedData); err != nil {
-		return "", err
-	}
-
-	// Flush any remaining data to the file
-	if err := tempFile.Sync(); err != nil {
-		return "", err
-	}
-
-	if err := tempFile.Close(); err != nil {
-		return "", err
-	}
-
-	fmt.Println("Temp file path:", tempFile.Name())
-
-	// Open the temporary file to verify
-	tempFile, err = os.Open(tempFile.Name())
-	if err != nil {
-		return "", err
-	}
-	defer tempFile.Close()
-
-	// Read the contents of the file
-	fileData, err := io.ReadAll(tempFile)
-	if err != nil {
-		return "", err
-	}
-
-	// Log the file data size to confirm it was written
-	fmt.Println("File data size:", len(fileData))
-
-    // Upload the image file to Gemini API
-    file, err := client.UploadFileFromPath(ctx, tempFile.Name(), nil)
+    file, err := uploadFile(ctx, client, tempFile.Name())
     if err != nil {
         return "", err
     }
     defer client.DeleteFile(ctx, file.Name)
 
-    // Set the model and prompt with image
+    ingredients, err := generateContent(ctx, client, file.URI)
+    if err != nil {
+        return "", err
+    }
+
+    fmt.Println("Ingredients:", ingredients)
+    return ingredients, nil
+}
+
+func loadEnv() error {
+    if err := godotenv.Load(); err != nil {
+        log.Fatal("Error loading .env file")
+        return err
+    }
+    return nil
+}
+
+func createTempFile(imageData string) (*os.File, error) {
+    decodedData, err := base64.StdEncoding.DecodeString(imageData)
+    if err != nil {
+        return nil, err
+    }
+
+    fmt.Println("Decoded data size:", len(decodedData))
+
+    tempFile, err := os.CreateTemp("", "*.jpg")
+    if err != nil {
+        return nil, err
+    }
+
+    if _, err := tempFile.Write(decodedData); err != nil {
+        return nil, err
+    }
+
+    if err := tempFile.Sync(); err != nil {
+        return nil, err
+    }
+
+    if err := tempFile.Close(); err != nil {
+        return nil, err
+    }
+
+    fmt.Println("Temp file path:", tempFile.Name())
+    return tempFile, nil
+}
+
+func uploadFile(ctx context.Context, client *genai.Client, filePath string) (*genai.File, error) {
+    tempFile, err := os.Open(filePath)
+    if err != nil {
+        return nil, err
+    }
+    defer tempFile.Close()
+
+    fileData, err := io.ReadAll(tempFile)
+    if err != nil {
+        return nil, err
+    }
+
+    fmt.Println("File data size:", len(fileData))
+
+    file, err := client.UploadFileFromPath(ctx, filePath, nil)
+    if err != nil {
+        return nil, err
+    }
+
+    return file, nil
+}
+
+func generateContent(ctx context.Context, client *genai.Client, fileURI string) (string, error) {
     model := client.GenerativeModel("gemini-1.5-flash")
     resp, err := model.GenerateContent(ctx,
-        genai.FileData{URI: file.URI},
+        genai.FileData{URI: fileURI},
         genai.Text(
             `Based on the food scanned, extract out the quanitty and ingredients used in food image. Don't provide explanation. Please follow the output format
             Example output:
@@ -115,6 +138,5 @@ func ExtractIngredients(imageData string) (string, error) {
         }
     }
 
-    fmt.Println("Ingredients:", ingredients.String())
     return ingredients.String(), nil
 }

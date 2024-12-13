@@ -5,6 +5,8 @@ import (
     "log"
     "net/http"
     "os"
+    "fmt"
+    "github.com/joho/godotenv"
 
     "nutrition-microservice/gemini"
     "nutrition-microservice/edamam"
@@ -96,8 +98,14 @@ func main() {
     http.HandleFunc("/edamam_analyze_nutrition", edamamAnalyzeNutritionHandler)
     http.HandleFunc("/edamam_suggest_recipe", edamamSuggestRecipeHandler)
 
+    // Load environment variables from .env file
+    if err := godotenv.Load(); err != nil {
+        log.Fatal("Error loading .env file")
+    }
+
     // Start the server
     port := os.Getenv("PORT")
+    fmt.Println("Server running on port:", port)
     if port == "" {
         port = "8080" // Default to 8080 if PORT is not set
     }
